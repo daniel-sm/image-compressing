@@ -6,7 +6,7 @@ from numpy.typing import NDArray
 # criando tipo para imagem de bytes
 IMG_BYTE = NDArray[np.uint8]
 
-def run_length_encoding(image: np.ndarray) -> IMG_BYTE:
+def run_length_encoding(image: IMG_BYTE) -> IMG_BYTE:
     encoded = []
     # adicionando a largura da imagem como header
     width = np.uint16(image.shape[1])
