@@ -1,0 +1,7 @@
+# ignorar arquivos de imagem
+*.jpg
+*.png
+*.bmp
+
+# ignorar arquivos compilados Python
+__pycache__/
