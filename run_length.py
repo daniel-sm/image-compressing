@@ -47,7 +47,8 @@ def run_length_decoding(encoded: IMG_BYTE) -> IMG_BYTE:
     return image
 
 def main() -> None:
-    image = cv.imread("image.bmp", cv.IMREAD_GRAYSCALE)
+    IMAGE = "capivara.jpg"
+    image = cv.imread(IMAGE, cv.IMREAD_GRAYSCALE)
     if image is None:
         raise FileNotFoundError("Image not found")
 
