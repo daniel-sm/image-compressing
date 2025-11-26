@@ -20,10 +20,6 @@ def compute_frequencies_rgb(image: np.ndarray) -> FREQUENCIES_TYPE:
 
 
 def build_huffman_tree_rgb(freqs: FREQUENCIES_TYPE) -> CODES_TYPE:
-    if len(freqs) == 1:
-        only_symbol = next(iter(freqs.keys()))
-        return { only_symbol: "0" }
-
     heap = []
     unique_id = 0
 
@@ -103,7 +99,6 @@ def decode_huffman_rgb(encoded: IMAGE_BYTE) -> IMAGE_BYTE:
     padding = int(encoded[0])
     width = int(np.frombuffer(encoded[1:3].tobytes(), dtype=np.uint16)[0])
     table_size = (int(encoded[3]) << 16) | (int(encoded[4]) << 8) | int(encoded[5])
-    print( "Table size:", table_size )
 
     table_start = 6
     table_end = table_start + table_size
@@ -145,7 +140,7 @@ def decode_huffman_rgb(encoded: IMAGE_BYTE) -> IMAGE_BYTE:
 
 
 def main():
-    image = cv.imread("image.bmp")
+    image = cv.imread("capivara.bmp")
 
     if image is None:
         print("Error: Could not read the image.")
