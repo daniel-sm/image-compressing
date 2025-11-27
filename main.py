@@ -1,32 +1,58 @@
+import sys
 import cv2 as cv
 import numpy as np
+from numpy.typing import NDArray
 
-import truncate, huffman, color_table
+import truncate, huffman, color_table, files
+
+
+IMAGE_BYTE = NDArray[np.uint8]
+
+
+def open_image(filename: str) -> IMAGE_BYTE:
+    image = cv.imread(filename)
+
+    if image is None:
+        raise ValueError("Could not open image file.")
+
+    return np.array(image, dtype=np.uint8)
 
 
 def main():
-    image = cv.imread("image.bmp")
+    if len(sys.argv) != 4:
+        print("Usage: python main.py [compress|decompress] image.ext file.ext")
+        sys.exit(1)
 
-    if image is None:
-        print("Error: Could not read the image.")
-        return
-    
-    image = np.array(image, dtype=np.uint8)
-    print("Original:", image.dtype, image.shape, image.size)
+    command = sys.argv[1]
+    imagename = sys.argv[2]
+    filename = sys.argv[3]
 
-    truncated = truncate.encoding(image)
-    print("Truncated:", truncated.dtype, truncated.shape, truncated.size)
+    if not files.valid_filename(filename) or not files.valid_filename(imagename):
+        print("Invalid filename.")
+        sys.exit(1)    
 
-    color_mapped = color_table.encoding(truncated)
-    print("Color Mapped:", color_mapped.dtype, color_mapped.shape, color_mapped.size)
+    if command == "compress":
+        image = open_image(imagename)
+        print("Image size: ", image.size)
+        data = truncate.truncate(image, bits=5)
+        data = huffman.encoding(data)
+        print("Compressed size:", data.size)
 
-    encoded = huffman.encoding(color_mapped)
-    print("Encoded:", encoded.dtype, encoded.shape, encoded.size)
+        files.write_bytes(filename, data)
+        print(f"Image compressed and saved to `{filename}`.")
 
-    decoded = huffman.decoding(encoded)
-    print("Decoded:", decoded.dtype, decoded.shape, decoded.size)
+    elif command == "decompress":
+        data = files.read_bytes(filename)
+        print("Compressed size:", data.size)
+        image = huffman.decoding(data)
+        print("Image size:", image.size)
 
-    cv.imwrite("trun_huff.bmp", decoded)
+        cv.imwrite(imagename, image)
+        print(f"Image decompressed and saved to `{imagename}`.")
+
+    else:
+        print("Invalid command. Use `compress` or `decompress`.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
