@@ -8,7 +8,7 @@ IMAGE_BYTE = NDArray[np.uint8]
 FREQUENCIES_TYPE = Dict[Tuple[int, int, int], int]
 CODES_TYPE = Dict[Tuple[int, int, int], str]
 
-def compute_frequencies(image: np.ndarray) -> FREQUENCIES_TYPE:
+def _compute_frequencies(image: np.ndarray) -> FREQUENCIES_TYPE:
     flat = image.reshape(-1, 3)
     freqs: FREQUENCIES_TYPE = {}
 
@@ -19,7 +19,7 @@ def compute_frequencies(image: np.ndarray) -> FREQUENCIES_TYPE:
     return freqs
 
 
-def build_huffman_tree(freqs: FREQUENCIES_TYPE) -> CODES_TYPE:
+def _build_huffman_tree(freqs: FREQUENCIES_TYPE) -> CODES_TYPE:
     heap = []
     unique_id = 0
 
@@ -50,9 +50,9 @@ def build_huffman_tree(freqs: FREQUENCIES_TYPE) -> CODES_TYPE:
     return codes
 
 
-def encode_huffman(image: IMAGE_BYTE) -> IMAGE_BYTE:
-    freqs = compute_frequencies(image)
-    codes = build_huffman_tree(freqs)
+def encoding(image: IMAGE_BYTE) -> IMAGE_BYTE:
+    freqs = _compute_frequencies(image)
+    codes = _build_huffman_tree(freqs)
 
     entries = sorted(freqs.items())
     table = np.empty(len(entries) * 7, dtype=np.uint8)
@@ -95,7 +95,7 @@ def encode_huffman(image: IMAGE_BYTE) -> IMAGE_BYTE:
     return np.concatenate([header, table, encoded]).astype(np.uint8)
 
 
-def decode_huffman(encoded: IMAGE_BYTE) -> IMAGE_BYTE:
+def decoding(encoded: IMAGE_BYTE) -> IMAGE_BYTE:
     padding = int(encoded[0])
     width = int(np.frombuffer(encoded[1:3].tobytes(), dtype=np.uint16)[0])
     table_size = (int(encoded[3]) << 16) | (int(encoded[4]) << 8) | int(encoded[5])
@@ -114,7 +114,7 @@ def decode_huffman(encoded: IMAGE_BYTE) -> IMAGE_BYTE:
         freqs[(r, g, b)] = freq
         i += 7
 
-    codes = build_huffman_tree(freqs)
+    codes = _build_huffman_tree(freqs)
     codes_reverse = { v: k for k, v in codes.items() }
 
     encoded_bytes = encoded[table_end:]
@@ -149,10 +149,10 @@ def main():
     image = np.array(image, dtype=np.uint8)
     print("Original:", image.dtype, image.shape, image.size)
 
-    encoded = encode_huffman(image)
+    encoded = encoding(image)
     print("Encoded:", encoded.dtype, encoded.shape, encoded.size)
 
-    decoded = decode_huffman(encoded)
+    decoded = decoding(encoded)
     print("Decoded:", decoded.dtype, decoded.shape, decoded.size)
 
     cv.imwrite("decoded_image.png", decoded)
