@@ -5,3 +5,6 @@
 
 # ignorar arquivos compilados Python
 __pycache__/
+
+# arquivos compactados
+*.dsm
